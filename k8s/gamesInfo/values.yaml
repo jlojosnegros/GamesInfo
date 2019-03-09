@@ -32,10 +32,26 @@ mailSender:
 database:
   tier: ddbb
 
+pv:
+  storageClass: jlom
+  path: "/mnt/data"
+
 mysql:
   mysqlRootPassword: gugus
   mysqlDatabase: gamesinfo_db
-
+  persistence:
+    enabled: true
+    ## database data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    storageClass: jlom
+    accessMode: ReadWriteOnce
+    size: 8Gi
+    annotations: {}
 
 #--------------------------------------------------------------
 replicaCount: 1
