@@ -13,6 +13,9 @@ webFE:
     tag: latest
     pullPolicy: IfNotPresent
   serviceType: LoadBalancer
+  ports:
+    internalPort: 8443
+    exposedPort: 80
 
 mailSender:
   replicaCount: 2
@@ -22,6 +25,9 @@ mailSender:
     tag: latest
     pullPolicy: IfNotPresent
   serviceType: ClusterIP
+  ports:
+    # warning: Do NOT change this port unless you also change mailService java app configuration also.
+    internalPort: 8080 #port where the mail service is listeninig incoming commands from webFE 
 
 database:
   tier: ddbb
@@ -31,7 +37,7 @@ mysql:
   mysqlDatabase: gamesinfo_db
 
 
-
+#--------------------------------------------------------------
 replicaCount: 1
 
 image:
@@ -40,7 +46,7 @@ image:
   pullPolicy: IfNotPresent
 
 nameOverride: ""
-fullnameOverride: "mierda-pura"
+fullnameOverride: ""
 
 service:
   type: ClusterIP

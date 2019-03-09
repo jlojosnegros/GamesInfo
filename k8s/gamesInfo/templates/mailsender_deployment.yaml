@@ -23,4 +23,4 @@ spec:
         image: "{{ .Values.mailSender.image.repository}}:{{ .Values.mailSender.image.tag}}"
         imagePullPolicy: {{ .Values.mailSender.image.pullPolicy}}
         ports:
-      - containerPort: 5000
+        - containerPort: {{ .Values.mailSender.internalPort}}

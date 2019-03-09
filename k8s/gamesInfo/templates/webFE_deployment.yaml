@@ -23,4 +23,4 @@ spec:
         image: "{{ .Values.webFE.image.repository}}:{{ .Values.webFE.image.tag}}"
         imagePullPolicy: {{ .Values.webFE.image.pullPolicy}}
         ports:
-      - containerPort: 5000
+        - containerPort: {{ .Values.webFE.ports.internalPort}}

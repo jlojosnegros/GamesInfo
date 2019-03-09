@@ -7,9 +7,10 @@ metadata:
     tier: {{ .Values.webFE.tier}}
 spec:
   ports:
-  - port: 5000
+  - port: {{ .Values.webFE.ports.internalPort}}
+    targetPort: {{ .Values.webFE.ports.exposedPort}}
     protocol: TCP
     name: "{{.Values.global.appName}}-webport"
   selector:
     app: {{ .Values.global.appName}}
-    type: {{ .Values.webFE.serviceType}}
+  type: {{ .Values.webFE.serviceType}}

@@ -7,9 +7,9 @@ metadata:
     tier: {{ .Values.mailSender.tier}}
 spec:
   ports:
-  - port: 5000
+  - port: {{ .Values.mailSender.ports.internalPort}}
     protocol: TCP
-    name: "{{.Values.global.appName}}-webport"
+    name: "{{.Values.global.appName}}-mailport"
   selector:
     app: {{ .Values.global.appName}}
-    type: {{ .Values.mailSender.serviceType}}
+  type: {{ .Values.mailSender.serviceType}}
