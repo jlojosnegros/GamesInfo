@@ -26,6 +26,12 @@ mailSender:
 database:
   tier: ddbb
 
+mysql:
+  mysqlRootPassword: gugus
+  mysqlDatabase: gamesinfo_db
+
+
+
 replicaCount: 1
 
 image:
