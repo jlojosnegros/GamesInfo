@@ -1,4 +1,5 @@
 dependencies:
-    - name: mysql
-      version: < 5.7
-      repository: "@stable"
+  - name: mysql
+    version: < 5.7
+    repository: "@stable"
+    alias: mysql
