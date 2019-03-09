@@ -3,3 +3,6 @@ prueba_servidor/src/main/java/LosOdiosos3/prueba_servidor/App.java
 
 target/
 bin/
+
+charts/
+*.lock
