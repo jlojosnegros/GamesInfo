@@ -2,6 +2,30 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  appName: jlojosnegros
+
+webFE:
+  replicaCount: 2
+  tier: front-end
+  image:
+    repository: jlojosnegros/prueba_servidor
+    tag: latest
+    pullPolicy: IfNotPresent
+  serviceType: LoadBalancer
+
+mailSender:
+  replicaCount: 2
+  tier: back-end
+  image:
+    repository: jlojosnegros/mailservice
+    tag: latest
+    pullPolicy: IfNotPresent
+  serviceType: ClusterIP
+
+database:
+  tier: ddbb
+
 replicaCount: 1
 
 image:
@@ -10,7 +34,7 @@ image:
   pullPolicy: IfNotPresent
 
 nameOverride: ""
-fullnameOverride: ""
+fullnameOverride: "mierda-pura"
 
 service:
   type: ClusterIP
