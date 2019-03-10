@@ -11,13 +11,13 @@ spec:
   selector:
     matchLabels:
       app: {{ .Values.global.appName}}
-      tier: {{ .Values.mailSender.tier}}
+      tier: {{ .Values.webFE.tier}}
   replicas: {{ .Values.webFE.replicaCount}} # tells deployment to run 1 pods matching the template
   template: # create pods using pod definition in this template
     metadata:
       labels:
         app: {{ .Values.global.appName}}
-        tier: {{ .Values.mailSender.tier}}
+        tier: {{ .Values.webFE.tier}}
     spec:
       containers:
       - name: {{ include "gamesInfo.fullname" . }}-webfe-container
