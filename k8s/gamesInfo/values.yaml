@@ -29,9 +29,6 @@ mailSender:
     # warning: Do NOT change this port unless you also change mailService java app configuration also.
     internalPort: 8080 #port where the mail service is listeninig incoming commands from webFE 
 
-database:
-  tier: ddbb
-
 pv:
   storageClass: jlom
   path: "/mnt/data"
@@ -52,6 +49,8 @@ mysql:
     accessMode: ReadWriteOnce
     size: 8Gi
     annotations: {}
+  service:
+    type: ClusterIP #yep, it is the default, but just in case.
 
 #--------------------------------------------------------------
 replicaCount: 1
