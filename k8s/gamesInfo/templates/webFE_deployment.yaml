@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "gamesInfo.fullname" . }}
+  name: {{ include "gamesInfo.fullname" . }}-webfe-deploy
   labels:
     app: {{ .Values.global.appName}}
     tier: {{ .Values.webFE.tier}}
@@ -17,9 +17,10 @@ spec:
     metadata:
       labels:
         app: {{ .Values.global.appName}}
+        tier: {{ .Values.mailSender.tier}}
     spec:
       containers:
-      - name: 
+      - name: {{ include "gamesInfo.fullname" . }}-webfe-container
         image: "{{ .Values.webFE.image.repository}}:{{ .Values.webFE.image.tag}}"
         imagePullPolicy: {{ .Values.webFE.image.pullPolicy}}
         ports:

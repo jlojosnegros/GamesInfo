@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "gamesInfo.fullname" .}}
+  name: {{ include "gamesInfo.fullname" . }}-webfe-svc
   labels:
     app: {{ .Values.global.appName}}
     tier: {{ .Values.webFE.tier}}

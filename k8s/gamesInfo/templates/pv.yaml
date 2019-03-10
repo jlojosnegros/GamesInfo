@@ -1,15 +1,15 @@
-kind: PersistentVolume
 apiVersion: v1
+kind: PersistentVolume
 metadata:
-  name: 
+  name: pv001
   labels:
     type: local
     app: {{ .Values.global.appName}}
 spec:
-  storageClassName: {{ .Values.pv.storageclass}}
+  storageClassName: {{ .Values.pv.storageClass}}
   capacity:
     storage: 10Gi
-    accessModes:
-      - ReadWriteOnce
-    hostPath:
-      path: {{ .Values.pv.path}}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.pv.path}}

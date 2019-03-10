@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "gamesInfo.fullname" . }}
+  name: {{ include "gamesInfo.fullname" . }}-mailsender-deploy
   labels:
-    app: {{ .Values.global.appName}}
-    tier: {{ .Values.mailSender.tier}}
+    app: {{.Values.global.appName}}
+    tier: {{.Values.mailSender.tier}}
 spec:
   strategy:
     type: Recreate
@@ -12,15 +12,16 @@ spec:
     matchLabels:
       app: {{ .Values.global.appName}}
       tier: {{ .Values.mailSender.tier}}
-  replicas: {{ .Values.mailSender.replicaCount}} # tells deployment to run 1 pods matching the template
-  template: # create pods using pod definition in this template
+  replicas: {{ .Values.mailSender.replicaCount}}
+  template:
     metadata:
       labels:
         app: {{ .Values.global.appName}}
+        tier: {{ .Values.mailSender.tier}}
     spec:
       containers:
-      - name: 
+      - name: {{ include "gamesInfo.fullname" . }}-mailsender-container
         image: "{{ .Values.mailSender.image.repository}}:{{ .Values.mailSender.image.tag}}"
         imagePullPolicy: {{ .Values.mailSender.image.pullPolicy}}
         ports:
-        - containerPort: {{ .Values.mailSender.internalPort}}
+        - containerPort: {{ .Values.mailSender.ports.internalPort}}
