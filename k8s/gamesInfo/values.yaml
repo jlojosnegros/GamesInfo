@@ -11,7 +11,7 @@ webFE:
   image:
     repository: jlojosnegros/prueba_servidor
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   serviceType: LoadBalancer
   ports:
     internalPort: 8443
@@ -23,7 +23,7 @@ mailSender:
   image:
     repository: jlojosnegros/mailservice
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
   serviceType: ClusterIP
   ports:
     # warning: Do NOT change this port unless you also change mailService java app configuration also.
