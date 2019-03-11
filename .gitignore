@@ -6,3 +6,10 @@ bin/
 
 charts/
 *.lock
+
+.vscode/
+.idea/
+.settings/
+*.iml
+*.swp
+.attach_pid*
