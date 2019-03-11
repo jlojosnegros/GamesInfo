@@ -13,4 +13,5 @@ spec:
     name: "{{.Values.global.appName}}-webport"
   selector:
     app: {{ .Values.global.appName}}
+    tier: {{ .Values.webFE.tier}}
   type: {{ .Values.webFE.serviceType}}

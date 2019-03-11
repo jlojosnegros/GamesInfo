@@ -12,4 +12,5 @@ spec:
     name: "{{.Values.global.appName}}-mailport"
   selector:
     app: {{ .Values.global.appName}}
+    tier: {{ .Values.mailSender.tier}}
   type: {{ .Values.mailSender.serviceType}}
