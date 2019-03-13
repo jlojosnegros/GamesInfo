@@ -9,9 +9,9 @@ webFE:
   replicaCount: 2
   tier: front-end
   image:
-    repository: jlojosnegros/prueba_servidor
+    repository: prueba_servidor
     tag: latest
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   serviceType: LoadBalancer
   ports:
     internalPort: 8443
@@ -21,9 +21,9 @@ mailSender:
   replicaCount: 2
   tier: back-end
   image:
-    repository: jlojosnegros/mailservice
+    repository: mailservice
     tag: latest
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
   serviceType: ClusterIP
   ports:
     # warning: Do NOT change this port unless you also change mailService java app configuration also.
@@ -52,3 +52,12 @@ mysql:
   service:
     type: ClusterIP #yep, it is the default, but just in case.
   nameOverride: jlojosnegros-mysql
+
+ingress:
+  protocol: HTTPS
+  host: gamesinfo.example.com
+  path: /
+  backend:
+    service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
+    port : 8443
+    
