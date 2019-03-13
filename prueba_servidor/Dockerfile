@@ -1,8 +1,10 @@
 FROM maven:3.6.0-jdk-8-alpine as builder
 RUN mkdir /project
-COPY . /project
+COPY ./pom.xml /project/pom.xml
 WORKDIR /project
-RUN mvn clean package -B
+RUN mvn dependency:go-offline
+COPY src/ /project/src/
+RUN mvn package
 
 FROM ubuntu:trusty
 RUN sudo apt-get update && sudo apt-get install -y software-properties-common wget unzip && sudo add-apt-repository ppa:openjdk-r/ppa && sudo apt-get update
