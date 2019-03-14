@@ -7,6 +7,10 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
     #nginx.ingress.kubernetes.io/backend-protocol: {{ .Values.ingress.protocol}}
 spec:
+  tls:
+  - secretName: {{ include "gamesInfo.fullname" . }}-ingress-certificate
+    host:
+    - {{ .Values.ingress.host}}
   rules:
   - host: {{ .Values.ingress.host}}
     http:
