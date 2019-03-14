@@ -12,7 +12,7 @@ webFE:
     repository: prueba_servidor
     tag: latest
     pullPolicy: IfNotPresent
-  serviceType: LoadBalancer
+  serviceType: NodePort
   port: 8443
 
 mailSender:
