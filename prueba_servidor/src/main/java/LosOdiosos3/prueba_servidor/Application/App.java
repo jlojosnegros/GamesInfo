@@ -32,15 +32,15 @@ public class App {
     }
     private static final Log LOG = LogFactory.getLog(App.class);
     
-    @Bean
-    public Config config() {
-	    Config config = new Config();
-	    JoinConfig joinConfig = config.getNetworkConfig().getJoin();	    
-	    joinConfig.getMulticastConfig().setEnabled(false);
-	    joinConfig.getTcpIpConfig().addMember( "192.168.33.13" ).addMember( "168.192.33.10" )
-	    .setEnabled( true );
-	    return config;
-    }
+    // @Bean
+    // public Config config() {
+	//     Config config = new Config();
+	//     JoinConfig joinConfig = config.getNetworkConfig().getJoin();	    
+	//     joinConfig.getMulticastConfig().setEnabled(false);
+	//     joinConfig.getTcpIpConfig().addMember( "192.168.33.13" ).addMember( "168.192.33.10" )
+	//     .setEnabled( true );
+	//     return config;
+    // }
     
     @Bean
     public CacheManager cacheManager() {

@@ -107,5 +107,10 @@
         <artifactId>hazelcast-wm</artifactId>
         <version>${hazelcast.version}</version>
     </dependency>
+	  <dependency>
+		  <groupId>com.hazelcast</groupId>
+		  <artifactId>hazelcast-kubernetes</artifactId>
+		  <version>1.4</version>
+	  </dependency>
   </dependencies>
 </project>
