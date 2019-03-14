@@ -54,7 +54,7 @@ mysql:
 ingress:
   protocol: HTTPS
   host: gamesinfo.example.com
-  path: /
+  path: /*
   backend:
     service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
     port : 8443
