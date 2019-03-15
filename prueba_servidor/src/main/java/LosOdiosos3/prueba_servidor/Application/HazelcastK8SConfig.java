@@ -73,7 +73,7 @@ public class HazelcastK8SConfig {
 
     @Bean
     public Config config() {
-        Config config = new ClasspathXmlConfig("hazelcast.xml");
+        Config config = new Confing();
 
         boolean k8s = System.getProperty("k8s", "true").equalsIgnoreCase("true");
 
