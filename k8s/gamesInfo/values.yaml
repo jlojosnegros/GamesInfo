@@ -6,7 +6,7 @@ global:
   appName: jlojosnegros
 
 webFE:
-  replicaCount: 2
+  replicaCount: 1
   tier: front-end
   image:
     repository: prueba_servidor
@@ -16,7 +16,7 @@ webFE:
   port: 8443
 
 mailSender:
-  replicaCount: 2
+  replicaCount: 1
   tier: back-end
   image:
     repository: mailservice
