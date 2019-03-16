@@ -7,8 +7,10 @@ metadata:
     tier: {{ .Values.webFE.tier}}
 spec:
   ports:
-  - port: {{ .Values.webFE.port}}
-    name: "{{.Values.global.appName}}-webport"
+  - name: hazelcast
+    port: 5701
+  - name: "{{.Values.global.appName}}-webport"
+    port: {{ .Values.webFE.port}}
   selector:
     app: {{ .Values.global.appName}}
     tier: {{ .Values.webFE.tier}}

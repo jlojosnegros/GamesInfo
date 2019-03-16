@@ -21,10 +21,10 @@ import org.springframework.session.hazelcast.config.annotation.web.http.EnableHa
 import com.hazelcast.config.Config;
 import com.hazelcast.config.JoinConfig;
 import com.hazelcast.config.NetworkConfig;
-
+import com.hazelcast.config.DiscoveryStrategyConfig;
 @EnableCaching
 @SpringBootApplication
-//@EnableHazelcastHttpSession
+@EnableHazelcastHttpSession
 public class App {
 	
     public static void main( String[] args ){    	
@@ -40,7 +40,16 @@ public class App {
 	//     joinConfig.getTcpIpConfig().addMember( "192.168.33.13" ).addMember( "168.192.33.10" )
 	//     .setEnabled( true );
 	//     return config;
-    // }
+	// }
+
+	@Bean
+	public Config hazelcastConfig() {
+		Config config = new Config();
+		JoinConfig joinConfig = config.getNetworkConfig().getJoin();
+		joinConfig.getMulticastConfig().setEnabled(false);
+		joinConfig.getKubernetesConfig().setEnabled(true);
+		return config;
+	}
     
     @Bean
     public CacheManager cacheManager() {

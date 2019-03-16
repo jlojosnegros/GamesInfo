@@ -14,6 +14,8 @@ webFE:
     pullPolicy: IfNotPresent
   serviceType: NodePort
   port: 8443
+  hazelcast:
+    port: 5701
 
 mailSender:
   replicaCount: 1

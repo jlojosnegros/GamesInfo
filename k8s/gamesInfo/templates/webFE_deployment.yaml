@@ -25,3 +25,4 @@ spec:
         imagePullPolicy: {{ .Values.webFE.image.pullPolicy}}
         ports:
         - containerPort: {{ .Values.webFE.port}}
+        - containerPort: {{ .Values.webFE.hazelcast.port}}
