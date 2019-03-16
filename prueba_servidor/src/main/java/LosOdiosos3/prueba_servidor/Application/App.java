@@ -24,7 +24,7 @@ import com.hazelcast.config.NetworkConfig;
 
 @EnableCaching
 @SpringBootApplication
-@EnableHazelcastHttpSession
+//@EnableHazelcastHttpSession
 public class App {
 	
     public static void main( String[] args ){    	

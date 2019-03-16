@@ -64,43 +64,43 @@ import com.hazelcast.spi.properties.GroupProperty;
  * </li>
  * </ol>
  */
-@Configuration
-public class HazelcastK8SConfig {
+// @Configuration
+// public class HazelcastK8SConfig {
 
-    private static final String DEFAULT_FALSE = "false";
-    private static final String HAZELCAST_SERVICE_NAME = "service-hazelcast-server";
-    private static final String MANCENTER_SERVICE_NAME = "service-hazelcast-management-center";
+//     private static final String DEFAULT_FALSE = "false";
+//     private static final String HAZELCAST_SERVICE_NAME = "service-hazelcast-server";
+//     private static final String MANCENTER_SERVICE_NAME = "service-hazelcast-management-center";
 
-    @Bean
-    public Config config() {
-        Config config = new Confing();
+//     @Bean
+//     public Config config() {
+//         Config config = new Config();
 
-        boolean k8s = System.getProperty("k8s", "true").equalsIgnoreCase("true");
+//         boolean k8s = System.getProperty("k8s", "true").equalsIgnoreCase("true");
 
-        JoinConfig joinConfig = config.getNetworkConfig().getJoin();
-        joinConfig.getMulticastConfig().setEnabled(false);
+//         JoinConfig joinConfig = config.getNetworkConfig().getJoin();
+//         joinConfig.getMulticastConfig().setEnabled(false);
 
-        if (k8s) {
-            // Step (1) in docs above
-            HazelcastKubernetesDiscoveryStrategyFactory hazelcastKubernetesDiscoveryStrategyFactory
-                    = new HazelcastKubernetesDiscoveryStrategyFactory();
-            DiscoveryStrategyConfig discoveryStrategyConfig =
-                    new DiscoveryStrategyConfig(hazelcastKubernetesDiscoveryStrategyFactory);
-            discoveryStrategyConfig.addProperty(KubernetesProperties.SERVICE_DNS.key(),
-                    HAZELCAST_SERVICE_NAME);
+//         if (k8s) {
+//             // Step (1) in docs above
+//             HazelcastKubernetesDiscoveryStrategyFactory hazelcastKubernetesDiscoveryStrategyFactory
+//                     = new HazelcastKubernetesDiscoveryStrategyFactory();
+//             DiscoveryStrategyConfig discoveryStrategyConfig =
+//                     new DiscoveryStrategyConfig(hazelcastKubernetesDiscoveryStrategyFactory);
+//             discoveryStrategyConfig.addProperty(KubernetesProperties.SERVICE_DNS.key(),
+//                     HAZELCAST_SERVICE_NAME);
 
-            // Step (2) in docs above
-            config.setProperty(GroupProperty.DISCOVERY_SPI_ENABLED.toString(), "true");
-            joinConfig.getDiscoveryConfig().addDiscoveryStrategyConfig(discoveryStrategyConfig);
+//             // Step (2) in docs above
+//             config.setProperty(GroupProperty.DISCOVERY_SPI_ENABLED.toString(), "true");
+//             joinConfig.getDiscoveryConfig().addDiscoveryStrategyConfig(discoveryStrategyConfig);
 
-            // Step (3) in docs above
-            config.getManagementCenterConfig()
-                    .setEnabled(true).setUrl("http://" + MANCENTER_SERVICE_NAME + ":8080/hazelcast-mancenter");
+//             // Step (3) in docs above
+//             config.getManagementCenterConfig()
+//                     .setEnabled(true).setUrl("http://" + MANCENTER_SERVICE_NAME + ":8080/hazelcast-mancenter");
 
-        } else {
-            joinConfig.getTcpIpConfig().setEnabled(true).setMembers(Collections.singletonList("127.0.0.1:5701"));
-        }
+//         } else {
+//             joinConfig.getTcpIpConfig().setEnabled(true).setMembers(Collections.singletonList("127.0.0.1:5701"));
+//         }
 
-        return config;
-    }
-}
+//         return config;
+//     }
+// }
