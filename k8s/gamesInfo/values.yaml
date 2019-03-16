@@ -49,6 +49,11 @@ mysql:
     annotations: {}
   service:
     type: ClusterIP #yep, it is the default, but just in case.
+  configurationFiles:
+    mysql.cnf: |-
+      [mysqld]
+      skip-name-resolve
+      bind-address=0.0.0.0
   nameOverride: jlojosnegros-mysql
 
 ingress:
