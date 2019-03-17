@@ -12,8 +12,8 @@ webFE:
     repository: prueba_servidor
     tag: latest
     pullPolicy: IfNotPresent
-  serviceType: NodePort
-  port: 8443
+  serviceType: ClusterIP
+  port: 8080
   hazelcast:
     port: 5701
 
@@ -64,4 +64,3 @@ ingress:
   path: /*
   backend:
     service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
-    port : 8443
