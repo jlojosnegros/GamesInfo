@@ -25,3 +25,7 @@ spec:
         imagePullPolicy: {{ .Values.mailSender.image.pullPolicy}}
         ports:
         - containerPort: {{ .Values.mailSender.ports.internalPort}}
+      initContainers:
+      - name: init-mysql
+        image: busybox
+        command: ['sh', '-c', 'until nslookup jlojosnegros-jlojosnegros-mysql; do echo waiting for mysql; sleep 2; done;']
