@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: nginx-ingress
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/rewrite-target: "/"
 spec:
   tls:
@@ -11,7 +11,7 @@ spec:
     host:
     - {{ .Values.ingress.host}}
   rules:
-  - host: "gamesinfo.example.com"
+  - host: {{.Values.ingress.host }}
     http:
       paths:
       - path: /
