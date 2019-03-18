@@ -6,8 +6,12 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/rewrite-target: "/"
 spec:
+  tls:
+  - secretName: {{ include "gamesInfo.fullname" . }}-ingress-certificate
+    host:
+    - {{ .Values.ingress.host}}
   rules:
-  - host: "{{.Values.ingress.host}}"
+  - host: "gamesinfo.example.com"
     http:
       paths:
       - path: /
