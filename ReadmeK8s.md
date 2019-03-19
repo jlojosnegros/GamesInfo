@@ -39,7 +39,7 @@
 
 ## Estructura elegida para el deployment
 Segun los requisitos del enunciado el despliegue debe realizarse en minikube.
-
+![Deployment Image](http://www.plantuml.com/plantuml/png/VPBFQiCm38VlVWgHUw3RkOH2wI27GQ6mImd3YRNCuCYThAoCqNTVx2vro_wS4dwVf4yHMGNHBEFWbEx4CtJE8ebYx4HJxn1wFM2ewSN3fmBe_73mX2Imhwbd307MdeIzSyWDw03s7D_M7h5zO4-o8TF0ShbsOn3aUbjLiINIJHf_tLIa-7bnL_m1xYCutOe6RTqEoI3_ueam9FXJbbaq_aEprcZHhGu8nUF7xiqLKM5CsyRPr_JmlfX6JkjiaOCDWlJatJXWLQL19zKvFvgqqjwI81DAas8RvINR_bNAwdBPxsS6wHxgVCNI-2DDMLnaZkQw_1KglruwPhLIgmd4F-8B)
 @startuml
 actor client
 rectangle gamesInfo {
