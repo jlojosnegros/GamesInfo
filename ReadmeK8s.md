@@ -27,9 +27,9 @@
 - [Configuraciones adicionales en k8s](#Configuraciones-adicionales-en-k8s)
     + [Hazelcast](#Hazelcast)
     + [Ingress](#Ingress)
-      - [Ingress Controller](#Ingress-Controller)
-      - [Generacion de certificados.](#Generacion-de-certificados)
-      - [Certificado.](#Certificado)
+    + [Ingress Controller](#Ingress-Controller)
+    + [Generacion de certificados.](#Generacion-de-certificados)
+    + [Certificado.](#Certificado)
 - [Deployment de la aplicacion en minikube](#Deployment-de-la-aplicacion-en-minikube)
   * [:warning: Disclaimer :warning:](#warning-Disclaimer-warning)
   * [Prerrequisitos](#Prerrequisitos)
@@ -51,7 +51,7 @@
 
 ## Estructura elegida para el deployment
 Segun los requisitos del enunciado el despliegue debe realizarse en minikube.
-![Deployment Image](http://www.plantuml.com/plantuml/png/VPBFQiCm38VlVWgHUw3RkOH2wI27GQ6mImd3YRNCuCYThAoCqNTVx2vro_wS4dwVf4yHMGNHBEFWbEx4CtJE8ebYx4HJxn1wFM2ewSN3fmBe_73mX2Imhwbd307MdeIzSyWDw03s7D_M7h5zO4-o8TF0ShbsOn3aUbjLiINIJHf_tLIa-7bnL_m1xYCutOe6RTqEoI3_ueam9FXJbbaq_aEprcZHhGu8nUF7xiqLKM5CsyRPr_JmlfX6JkjiaOCDWlJatJXWLQL19zKvFvgqqjwI81DAas8RvINR_bNAwdBPxsS6wHxgVCNI-2DDMLnaZkQw_1KglruwPhLIgmd4F-8B)
+![Deployment Image](http://www.plantuml.com/plantuml/png/TP7DQiCm48JlUeh5TqFQSmY1a48EXK2Wbn2AB6rTWNwINTcXbBnx9JMD6kfUR3FVpCxAMdAK50TdXLGn42Xhq4T1gABqlKNefKFU-BS0dm901NSCFZbWl_4z8JEiWeyKh4KwW6Gmt_AzzupT4oNVski3pEShEt14scmNYnp9T5t6_murHNwTFJJ_WCSCBlT5JXgxGw-H9deov0B_bbKsrLZfP6tp_C4d2umq6eLDwSfAowEwLcaPPISPitTtiiMZTTTTPrLy76TfWRJy5eaDH_GlmGuEqn4WXuwZk0Xbmw3BvBtn4SbZF1JPv7LQClrxR1UtkxY-AoX_K9Gdj3gSVTBADaMgldfkKJzlYPzg8NAsfjAAo-GSdFq2)
 
 ```plantuml
 @startuml
@@ -66,9 +66,10 @@ rectangle gamesInfo {
     component "mailsender_01"
     component "mailsender_02"
   }
-  database "MySql" as ddbb{
-    database "pv001" <<PersistenVolume>>
+  component "Mysql service" as mysql-svc {
+    database "MySql" as ddbb
   }
+  database "pv001" <<PersistenVolume>>   as pv
 }
 cloud {
   [internet]
@@ -78,6 +79,8 @@ ingress -right-> webFE
 webFE -down-> ddbb
 webFE -right-> mailsender
 mailsender -down-> internet
+
+ddbb -right-> pv
 
 @enduml
 ```
@@ -471,7 +474,7 @@ subjects:
 
 Se requiere exponer el frontal web al exterior. Para ello en lugar de utilizar un servicio de tipo `LoadBalancer` se ha utilizado un `Ingress`.
 
-##### Ingress Controller
+#### Ingress Controller
 Para configurar el Ingress controller se despliega junto con el chart el siguiente ingress controller.
 fichero `./k8s/gamesInfo/templates/ingress.yaml`[^my_ingress_controller]
 ```yaml
@@ -507,7 +510,7 @@ ingress:
     service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
 ```
 
-##### Generacion de certificados.
+#### Generacion de certificados.
 El acceso a la aplicacion estaba realizado mediante HTTPS. Para continuar manteniendo eso se ha activado el soporte de TLS en el ingress controller, lo que hace necesario un certificado.
 
 Para poder crear el certificado necesitamos a su vez un fichero de certificado y una clave. 
@@ -520,7 +523,7 @@ $> openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout tls.key -out tls.cr
 :warning: Suponiendo que tenemos la aplicacion en el dominio `example.con` 
 
 
-##### Certificado.
+#### Certificado.
 
 Una vez generados los ficheros mediante openssl tenemos que hacer un certificado para que este accesible a nuestro ingress controller desde el despliegue de kubernetes.
 Para ello incluimos el siguiente fichero en el despliegue de nuestro chart:

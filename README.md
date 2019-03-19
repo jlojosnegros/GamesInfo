@@ -1,14 +1,8 @@
 # GamesInfo 
 
-:dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog:
-:cat::dog::cat::dog::cat::dog:
 
-We know you love our work, and we are proud you use it as help, but please be good people and dont copy our font code 
-
-:dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog::cat::dog:
-:cat::dog::cat::dog::cat::dog:
-
-See you, the team :smirk:
+## Despliegue en K8s
+[Aqui](ReadmeK8s.md)
 
 Indice
 =================
