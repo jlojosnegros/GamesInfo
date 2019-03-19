@@ -64,6 +64,11 @@ Segun los requisitos:
  
 No necesitamos ningun tipo de elemento adicional para balancear la carga entre las dos instancias del frontal web puesto que esta caracteristica nos la ofrece k8s out of the box.
 
+#### Imagen docker
+Para poder desplegar el frontal web en kubernetes necesitamos una imagen docker. 
+Para construirla a partir del proyecto actual utilizamos el siguiente fichero `Dockerfile`.
+(#/prueba_servidor/Dockerfile)
+
 ### MailSender
 Segun los requisitos:
 - este servicio debe desplegarse con **dos** replicas.
