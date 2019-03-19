@@ -27,9 +27,9 @@
 - [Configuraciones adicionales en k8s](#Configuraciones-adicionales-en-k8s)
     + [Hazelcast](#Hazelcast)
     + [Ingress](#Ingress)
-    + [Ingress Controller](#Ingress-Controller)
-    + [Generacion de certificados.](#Generacion-de-certificados)
-    + [Certificado.](#Certificado)
+      - [Ingress Controller](#Ingress-Controller)
+      - [Generacion de certificados.](#Generacion-de-certificados)
+      - [Certificado.](#Certificado)
 - [Deployment de la aplicacion en minikube](#Deployment-de-la-aplicacion-en-minikube)
   * [:warning: Disclaimer :warning:](#warning-Disclaimer-warning)
   * [Prerrequisitos](#Prerrequisitos)
@@ -471,7 +471,7 @@ subjects:
 
 Se requiere exponer el frontal web al exterior. Para ello en lugar de utilizar un servicio de tipo `LoadBalancer` se ha utilizado un `Ingress`.
 
-#### Ingress Controller
+##### Ingress Controller
 Para configurar el Ingress controller se despliega junto con el chart el siguiente ingress controller.
 fichero `./k8s/gamesInfo/templates/ingress.yaml`[^my_ingress_controller]
 ```yaml
@@ -507,7 +507,7 @@ ingress:
     service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
 ```
 
-#### Generacion de certificados.
+##### Generacion de certificados.
 El acceso a la aplicacion estaba realizado mediante HTTPS. Para continuar manteniendo eso se ha activado el soporte de TLS en el ingress controller, lo que hace necesario un certificado.
 
 Para poder crear el certificado necesitamos a su vez un fichero de certificado y una clave. 
@@ -520,7 +520,7 @@ $> openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout tls.key -out tls.cr
 :warning: Suponiendo que tenemos la aplicacion en el dominio `example.con` 
 
 
-#### Certificado.
+##### Certificado.
 
 Una vez generados los ficheros mediante openssl tenemos que hacer un certificado para que este accesible a nuestro ingress controller desde el despliegue de kubernetes.
 Para ello incluimos el siguiente fichero en el despliegue de nuestro chart:
