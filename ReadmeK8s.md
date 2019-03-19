@@ -45,6 +45,7 @@
   * [Configuracion del ingress en minikube](#Configuracion-del-ingress-en-minikube)
   * [Configuracion del hostname](#Configuracion-del-hostname)
   * [Lanzamiento de la aplicacion mediante helm](#Lanzamiento-de-la-aplicacion-mediante-helm)
+  * [Visualizacion del resultado](#Visualizacion-del-resultado)
 - [Explicacion del fichero de valores `values.yaml`](#Explicacion-del-fichero-de-valores-valuesyaml)
 
 <!-- tocstop -->
@@ -656,6 +657,9 @@ Si deseamos eliminar la aplicacion solo tenemos que ejecutar
 ```bash
 $> helm del --purge jlojosnegros
 ```
+### Visualizacion del resultado
+Una vez realizado todo esto y, despues de dejar tiempo suficiente para asegurarse de que Spring ha terminado de realizar toooooda la inicializacion que tiene que hacer, algo que en ocasiones y dependiendo de los recursos disponibles para el cluster puede llevar **varios minutos**, podemos ver el resultado mediante cualquier navegador. Abriremos la siguiente url `https://gamesinfo.example.com`.
+Es posible que, debido a que los certificados son autogenerados y no estan firmados por una entidad certificadora de confianza para el navegador, este nos de un aviso sobre que estamos intentando acceder una pagina no confiable y que tenemos que dar nuestro consentimiento. Esto se hace de manera distinta en cada navegador, pero basicamente consiste en aceptar el certificado y anadir una excepcion para este sitio en particular.
 
 ## Explicacion del fichero de valores `values.yaml`
 En varias secciones hemos visto partes del fichero de valores `values.yaml`. Aqui tenemos su contenido al completo con la explicacion de los parametros mas relevantes.
