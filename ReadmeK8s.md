@@ -20,6 +20,7 @@
     + [Creacion del `Persistent Volume`](#Creacion-del-Persistent-Volume)
     + [Nuevo requerimiento](#Nuevo-requerimiento)
     + [Configuracion del chart.](#Configuracion-del-chart)
+    + [Obtencion del chart](#Obtencion-del-chart)
 - [Adaptación de la aplicación al entorno kubernetes](#Adaptacion-de-la-aplicacion-al-entorno-kubernetes)
   * [From Ip to ServiceNames](#From-Ip-to-ServiceNames)
   * [Configuracion Hazelcast](#Configuracion-Hazelcast)
@@ -335,7 +336,7 @@ pv:
 
 #### Nuevo requerimiento
 Para poder utilizar el char de mysql tendremos que anadirlo como nueva dependencia de nuestro chart.
-1. Para ello ponemos las siguientes lineas en el fichero `requirements.yaml` (./k8s/gamesinfo/requirements.yaml)
+Para ello ponemos las siguientes lineas en el fichero `requirements.yaml` (./k8s/gamesinfo/requirements.yaml)
 ```yaml
 dependencies:
   - name: mysql
@@ -378,7 +379,8 @@ mysql:
 - mediante `configurationFiles` nos aseguramos de que la configuracion de red de mysql es la correcta para nuestro entorno.
 - mediante `nameOverride` nos aseguramos de que el servicio que expondra la base de datos en el cluster de kubernetes, y que ya hemos configurado como `ClusterIP` para evitar que pueda ser accedida desde fuera del cluster, tenga un nombre fijo al que poder referirnos, puesto que el servicio de frontal web tendra que poder acceder a la base de datos.
 
-2. No aseguramos de tener correctamente configurador el repositorio "@stable" de helm chart. La salida al ejecutar el siguiente comando deberia ser la que se muestra:
+#### Obtencion del chart
+No aseguramos de tener correctamente configurador el repositorio "@stable" de helm chart. La salida al ejecutar el siguiente comando deberia ser la que se muestra:
 ```bash
 $> helm repo list
 NAME    URL                                             
