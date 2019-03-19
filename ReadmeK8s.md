@@ -26,20 +26,34 @@
   * [Configuracion Hazelcast](#Configuracion-Hazelcast)
 - [Configuraciones adicionales en k8s](#Configuraciones-adicionales-en-k8s)
     + [Hazelcast](#Hazelcast)
+    + [Ingress](#Ingress)
     + [Ingress Controller](#Ingress-Controller)
+    + [Generacion de certificados.](#Generacion-de-certificados)
+    + [Certificado.](#Certificado)
 - [Deployment de la aplicacion en minikube](#Deployment-de-la-aplicacion-en-minikube)
+  * [:warning: Disclaimer :warning:](#warning-Disclaimer-warning)
   * [Prerrequisitos](#Prerrequisitos)
-  * [Creacion de las imagenes](#Creacion-de-las-imagenes)
+    + [VirtualBox](#VirtualBox)
+    + [Docker](#Docker)
+    + [Minikube](#Minikube)
+    + [Helm](#Helm)
+    + [Kubectl](#Kubectl)
+  * [Despliegue](#Despliegue)
+    + [1.- Creacion de las imagenes](#1--Creacion-de-las-imagenes)
+      - [1.1 Utilizando el registry de minikube](#11-Utilizando-el-registry-de-minikube)
+      - [1.2 Construimos las imagenes](#12-Construimos-las-imagenes)
   * [Configuracion del ingress en minikube](#Configuracion-del-ingress-en-minikube)
   * [Configuracion del hostname](#Configuracion-del-hostname)
   * [Lanzamiento de la aplicacion mediante helm](#Lanzamiento-de-la-aplicacion-mediante-helm)
-  * [Explicacion del fichero de valores `values.yaml`](#Explicacion-del-fichero-de-valores-valuesyaml)
+- [Explicacion del fichero de valores `values.yaml`](#Explicacion-del-fichero-de-valores-valuesyaml)
 
 <!-- tocstop -->
 
 ## Estructura elegida para el deployment
 Segun los requisitos del enunciado el despliegue debe realizarse en minikube.
 ![Deployment Image](http://www.plantuml.com/plantuml/png/VPBFQiCm38VlVWgHUw3RkOH2wI27GQ6mImd3YRNCuCYThAoCqNTVx2vro_wS4dwVf4yHMGNHBEFWbEx4CtJE8ebYx4HJxn1wFM2ewSN3fmBe_73mX2Imhwbd307MdeIzSyWDw03s7D_M7h5zO4-o8TF0ShbsOn3aUbjLiINIJHf_tLIa-7bnL_m1xYCutOe6RTqEoI3_ueam9FXJbbaq_aEprcZHhGu8nUF7xiqLKM5CsyRPr_JmlfX6JkjiaOCDWlJatJXWLQL19zKvFvgqqjwI81DAas8RvINR_bNAwdBPxsS6wHxgVCNI-2DDMLnaZkQw_1KglruwPhLIgmd4F-8B)
+
+```plantuml
 @startuml
 actor client
 rectangle gamesInfo {
@@ -66,7 +80,7 @@ webFE -right-> mailsender
 mailsender -down-> internet
 
 @enduml
-
+```
 
 ### Web Front End
 Segun los requisitos:
@@ -336,7 +350,7 @@ pv:
 
 #### Nuevo requerimiento
 Para poder utilizar el char de mysql tendremos que anadirlo como nueva dependencia de nuestro chart.
-Para ello ponemos las siguientes lineas en el fichero `requirements.yaml` (./k8s/gamesinfo/requirements.yaml)
+Para ello ponemos las siguientes lineas en el fichero `requirements.yaml` (./k8s/gamesinfo/requirements.yaml)[^requirements]
 ```yaml
 dependencies:
   - name: mysql
@@ -391,42 +405,348 @@ En caso de no ser asi configuramos el repositorio de helm, usando el siguiente c
 ```bash
 $> helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 ```
-3. Por ultimo actualizamos las dependencias para tener el chart descargado. Este paso puede relegarse hasta el momento de la instalacion si se desea.
+Por ultimo actualizamos las dependencias para tener el chart descargado. Este paso puede relegarse hasta el momento de la instalacion si se desea.
 ```bash
 $> helm dependency update
 ```
 ## Adaptación de la aplicación al entorno kubernetes
 ### From Ip to ServiceNames
+En la aplicacion original todas las configuraciones de red se realizaban en terminos de direcciones Ip.
+Este tipo de configuracion no es valida a la hora de pasar al entorno de kubernetes ya que es el sistema quien controla el tiempo de vida de los distintos pods y les asigna las direcciones ip, con lo que, en un princio, no podemos saber a priori la direccion ip de los elementos a los que nos queremos dirigir.
+Por otro lado en este entorno la comunicacion se realiza entre servicios, de manera que estos a su vez puedan realizar el balanceo de carga que consideren oportuno entre las distintas instancias que los conformen.
+Como resultado de todo esto se han tenido que sustituir, alli donde ha sido necesario, las direcciones ip por los nombres de servicios, que mediante el DNS interno del cluster de kubernetes seran resueltos las direcciones adecuadas en cada momento.
+
 ### Configuracion Hazelcast
+La aplicacion utilizaba el in memory data grid llamado Hazelcast para mantener las sesiones de usuario replicadas entre las distintas instancias que formaban parte del frontal web y de esa manera hacer transparente al usuario la caida de una de estas instancias.
+
+La configuracion que se utilizaba estaba, de nuevo, basada en direcciones ip, por lo que ha habido que realizar cambios en la configuracion de la aplicacion.
+
+Para adaptar la aplicacion al entorno de kubernetes se ha tenido que cambiar el `@Bean` de configuracion utilizado:
+
+
+```java
+@EnableCaching
+@SpringBootApplication
+@EnableHazelcastHttpSession
+public class App {
+    public static void main( String[] args ){    	
+    	SpringApplication.run(App.class, args);
+    }
+    private static final Log LOG = LogFactory.getLog(App.class);
+
+  @Bean
+	public Config hazelcastConfig() {
+		Config config = new Config();
+		JoinConfig joinConfig = config.getNetworkConfig().getJoin();
+		joinConfig.getMulticastConfig().setEnabled(false);
+		joinConfig.getKubernetesConfig().setEnabled(true);
+		return config;
+	}
+}
+```
+
 ## Configuraciones adicionales en k8s
 #### Hazelcast
+
+Hazelcast utiliza el API de Kubernetes para realizar el autodiscovery de los distintos end-points, y para ello necesita de ciertos permisos. 
+Para solucionarlo incluimos el siguiente fichero en el deployment de nuestro chart.
+
+`./k8s/gamesInfo/templates/rbac.yaml`[^hazelcast_rbac]
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: default-cluster
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: default
+```
+#### Ingress
+
+Se requiere exponer el frontal web al exterior. Para ello en lugar de utilizar un servicio de tipo `LoadBalancer` se ha utilizado un `Ingress`.
+
 #### Ingress Controller
+Para configurar el Ingress controller se despliega junto con el chart el siguiente ingress controller.
+fichero `./k8s/gamesInfo/templates/ingress.yaml`[^my_ingress_controller]
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/"
+spec:
+  tls:
+  - secretName: {{ include "gamesInfo.fullname" . }}-ingress-certificate
+    host:
+    - {{ .Values.ingress.host}}
+  rules:
+  - host: {{.Values.ingress.host }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .Values.ingress.backend.service}}
+          servicePort: {{ .Values.webFE.port}}
+```          
+
+Como puede verse en el fichero exponemos el servicio del frontal en la raiz del host.
+
+Aqui podemos ver algunos valores utilizados en el fichero `values.yaml`
+```yaml
+ingress:
+  host: gamesinfo.example.com
+  backend:
+    service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
+```
+
+#### Generacion de certificados.
+El acceso a la aplicacion estaba realizado mediante HTTPS. Para continuar manteniendo eso se ha activado el soporte de TLS en el ingress controller, lo que hace necesario un certificado.
+
+Para poder crear el certificado necesitamos a su vez un fichero de certificado y una clave. 
+Estos ficheros se encuentran en la carpeta `./k8s/gamesInfo/tls_secret` y fueron generados mediante los siguientes comandos 
+
+```bash
+$> cd k8s/gamesInfo/tls_secret
+$> openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout tls.key -out tls.crt -subj "/CN=*.example.com" -days 365
+```
+:warning: Suponiendo que tenemos la aplicacion en el dominio `example.con` 
+
+
+#### Certificado.
+
+Una vez generados los ficheros mediante openssl tenemos que hacer un certificado para que este accesible a nuestro ingress controller desde el despliegue de kubernetes.
+Para ello incluimos el siguiente fichero en el despliegue de nuestro chart:
+fichero `./k8s/gamesInfo/templates/ingress_secret.yaml`[^my_ingress_secret]
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "gamesInfo.fullname" . }}-ingress-certificate
+  labels:
+    app: {{ .Values.global.appName}}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: "{{ .Release.Name }}"
+    heritage: "{{ .Release.Service }}"
+type: kubernetes.io/tls
+data:
+  tls.crt: {{ .Files.Get "tls_secret/tls.crt" | b64enc }}
+  tls.key: {{ .Files.Get "tls_secret/tls.key" | b64enc }}
+```
+
+
 ## Deployment de la aplicacion en minikube
+### :warning: Disclaimer :warning:
+Las instrucciones que aqui se detallan estan pensadas para ser realizadas desde una consola de un ubuntu 18.10.
+En caso de realizar la instalacion desde otro tipo de linux o desde un windows podria ser necesario realizar algunos ajustes en el primer caso y neutralizar el virus e instalar un sistema operativo de verdad en el segundo.
+
 ### Prerrequisitos
-### Creacion de las imagenes
-- eval minikube
-- build
+
+Antes de poder realizar el despliegue se necesitan tener instalados algunos elementos.
+En [esta](https://kubernetes.io/docs/setup/minikube/) pagina podemos ver como realizar una instalacion de todos ellos, aunque pasamos a detallarlos.
+
+#### VirtualBox
+Utilizado por minikube para contener el cluster de k8s.
+Las instrucciones de instalacion se pueden seguir desde [esta](https://www.virtualbox.org/wiki/Linux_Downloads) pagina. 
+
+#### Docker
+Necesitaremos docker para poder crear las imagenes de nuestras aplicaciones 
+En [esta](https://docs.docker.com/install/linux/docker-ce/ubuntu/) pagina podemos encontrar las instrucciones de instalacion.
+
+#### Minikube
+Nos permitira tener un cluster de kubernetes en una maquina virtual.
+[Aqui](https://github.com/kubernetes/minikube/releases) podemos ver las instrucciones para la instalacion.
+
+#### Helm
+Para realizar el despliegue de la aplicacion vamos a utilizar la herramienta helm.
+[Aqui](https://helm.sh/docs/using_helm/#installing-helm) podemos ver como instalarla.
+
+#### Kubectl
+Cliente para poder interaccionar con el cluster de kubernetes que instalaremos con minikube
+[Aqui](https://kubernetes.io/docs/tasks/tools/install-kubectl/) podemos encontrar un tutorial para su instalacion.
+
+### Despliegue
+#### 1.- Creacion de las imagenes
+##### 1.1 Utilizando el registry de minikube
+Las imagenes las vamos a crear utilizando nuestro host, sin embargo tienen que estar accesibles posteriormente en la maquina virtual donde minikube realizara el despliegue.
+Para ello se podria utilizar un repositorio externo como `dockerhub`, pero para evitar tener que andar subiendo las imagenes utilizaremos directamente el repositorio local de minikube
+
+Para ello: 
+- Arrancamos minikube
+```bash
+$> minikube start --memory 16384 --cpus 4
+😄  minikube v0.35.0 on linux (amd64)
+💡  Tip: Use 'minikube start -p <name>' to create a new cluster, or 'minikube delete' to delete this one.
+🔄  Restarting existing virtualbox VM for "minikube" ...
+⌛  Waiting for SSH access ...
+📶  "minikube" IP address is 192.168.99.100
+🐳  Configuring Docker as the container runtime ...
+✨  Preparing Kubernetes environment ...
+🚜  Pulling images required by Kubernetes v1.13.4 ...
+🔄  Relaunching Kubernetes v1.13.4 using kubeadm ... 
+⌛  Waiting for pods: apiserver proxy etcd scheduler controller addon-manager dns
+📯  Updating kube-proxy configuration ...
+🤔  Verifying component health .....
+💗  kubectl is now configured to use "minikube"
+🏄  Done! Thank you for using minikube!
+```
+:warning: Utilizamos 16G de memoria y 4 cpus porque la aplicacion, al estar basada en java/SpringBoot consume **ingentes cantidades** de memoria.
+
+- Hacemos que nuestro cliente local de docker apunte al registry de minikube 
+```bash
+$> eval $(minikube docker-env)
+```
+Ahora ya podemos construir las imagenes y al hacerlo estaran directamente disponibles para nuestro despliegue en minikube.
+
+##### 1.2 Construimos las imagenes
+Para poder realizar el despliegue necesitamos tener las imagenes de los distintos elementos que forman nuestra aplicacion.
+Para ello construiremos las imagenes docker utilizando los ficheros Dockerfile antes mostrados y los siguientes comandos.
+**:warning: Estos comandos hay que ejecutarlos en el mismo terminal en el que se ha realizado la configuracion del registry de minikube, si no no podremos acceder a las imagenes.**
+
+- Frontal web
+```bash
+$> docker build --rm -f prueba_servidor/Dockerfile -t prueba_servidor prueba_servidor/
+```
+- Mail Service
+```bash
+$> docker build --rm -f mailService/Dockerfile -t mailservice mailService/
+```
 ### Configuracion del ingress en minikube
-- addon enable ingress
+Minikube trae soporte para ingress, pero hay activarlo. 
+Debemos asegurarnos que el addon para ingress esta activado
+```bash
+$> minikube addons list | grep ingress
+- ingress: enabled
+```
+En caso de no ser asi lo activamos 
+```bash
+$> minikube addons enable ingress
+✅  ingress was successfully enabled
+```
 
 ### Configuracion del hostname 
-/etc/hosts
+Para poder acceder despues a la aplicacion tenemos que configurar el hostname en nuestro sistema de manera que nos direcciones adecuadamente. Para ello ejecutamos.
+
 ```bash
 echo "$(minikube ip) gamesinfo.example.com" | sudo tee -a /etc/hosts
 ```
 ### Lanzamiento de la aplicacion mediante helm
-### Explicacion del fichero de valores `values.yaml`
+
+Una vez realizado todo esto solamente nos queda desplegar el chart mediante la herramienta helm.
+Recordar que existe una dependencia con un chart de terceros de manera que, si no se ha realizado antes se deberan de actualizar las dependencias.
+
+```bash
+$> cd k8s
+$> helm dependency update
+$> helm install --debug  gamesInfo/ --name jlojosnegros
+```
+
+Si deseamos eliminar la aplicacion solo tenemos que ejecutar
+```bash
+$> helm del --purge jlojosnegros
+```
+
+## Explicacion del fichero de valores `values.yaml`
+En varias secciones hemos visto partes del fichero de valores `values.yaml`. Aqui tenemos su contenido al completo con la explicacion de los parametros mas relevantes.
+
+```yaml
+# Default values for gamesInfo.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  appName: jlojosnegros
+
+webFE:               # Configuracion relativa al frontal web
+  replicaCount: 2    # numero de replicas del frontal que se arrancaran
+  tier: front-end
+  image:
+    repository: prueba_servidor # nombre de la imagen para el frontal web
+    tag: latest                 # version o tag de la imagen
+    pullPolicy: IfNotPresent   
+  serviceType: ClusterIP        # Tipo de servicio utilizado para exponer el frontal
+  port: 8080                    # Puerto en el que escuchara peticiones el frontal
+  hazelcast:
+    port: 5701                  # Puerto utilizado por hazelcast.
+
+mailSender:         # Configuracion relativa al mail service
+  replicaCount: 2   # numero de instancias que se arrancaran del servicio
+  tier: back-end
+  image:
+    repository: mailservice     # nombre de la imagen para el mail service
+    tag: latest                 # version o tag de la imagen
+    pullPolicy: IfNotPresent
+  serviceType: ClusterIP        # Tipo de servicio utilizado para exponer el frontal
+  ports:
+    # warning: Do NOT change this port unless you also change mailService java app configuration also.
+    internalPort: 8080 #port where the mail service is listeninig incoming commands from webFE 
+
+pv:              # Configuracion relativa al Persistent Volume para Mysql
+  storageClass: jlom     # Storage class que tendra nuestro Persisten Volume
+  path: "/mnt/data"      # Directorio del cluster donde se montara el respaldo fisico del volumen
+
+mysql:          # Configuracion para el chart de mysql
+  mysqlRootPassword: gugus           # Password del usuario root
+  mysqlDatabase: gamesinfo_db        # Base de datos que tiene que crear al arrancar
+  persistence:
+    enabled: true                    # activamos la persistencia de datos para que utilice el Persistent Volume
+    ## database data Persistent Volume Storage Class
+    ## If defined, storageClassName: <storageClass>
+    ## If set to "-", storageClassName: "", which disables dynamic provisioning
+    ## If undefined (the default) or set to null, no storageClassName spec is
+    ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+    ##   GKE, AWS & OpenStack)
+    ##
+    storageClass: jlom              # Especificamos los valores del Persitent Volume Claim que hara el Mysql para asegurarnos de que se cumplen con nuestro Persisten Volume
+    accessMode: ReadWriteOnce
+    size: 8Gi
+    annotations: {}
+  service:
+    type: ClusterIP #yep, it is the default, but just in case.
+  configurationFiles:    # Configuramos el mysql para que escuche en todos los interfaces IPv4
+    mysql.cnf: |-
+      [mysqld]
+      skip-name-resolve
+      bind-address=0.0.0.0
+  nameOverride: jlojosnegros-mysql  # Nos aseguramos de que el servicio de mysql tiene un nombre fijo.
+
+ingress:                # Configuracion para el ingress controller
+  host: gamesinfo.example.com          # Hostname que se utilizara en el ingress
+  backend:
+    service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc  # Servicio expuesto en el ingress controller.
+```
 
 
 
-------------
-[^service_types]:https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+
+[^service_types]: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+
 [^deployments]: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+
 [^ingress_controller]: https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+
 [^persistent_volumes]: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
 [^mailService_dockerfile]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/mailService/Dockerfile
-[^webFE_deployment]:https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/webFE_deployment.yaml
-[^webFE_service]:https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/webFE_service.yaml
-[^mailsender_deployment]:https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/mailsender_deployment.yaml
-[^mailsender_service]:https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/mailsender_service.yaml
+
+[^webFE_deployment]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/webFE_deployment.yaml
+
+[^webFE_service]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/webFE_service.yaml
+
+[^mailsender_deployment]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/mailsender_deployment.yaml
+
+[^mailsender_service]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/mailsender_service.yaml
+[^hazelcast_rbac]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/rbac.yaml 
+[^requirements]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/requirements.yaml 
+
+[^my_ingress_controller]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/ingress.yaml 
+
+[^my_ingress_secret]: https://raw.githubusercontent.com/jlojosnegros/GamesInfo/master/k8s/gamesInfo/templates/ingress.yaml 
