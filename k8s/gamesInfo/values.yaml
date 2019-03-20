@@ -36,6 +36,8 @@ pv:
   path: "/mnt/data"
 
 mysql:
+  podLabels:
+    app: jlojosnegros
   mysqlRootPassword: gugus
   mysqlDatabase: gamesinfo_db
   persistence:
