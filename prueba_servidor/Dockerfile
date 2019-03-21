@@ -12,5 +12,5 @@ RUN sudo apt-get install -y openjdk-8-jre
 RUN mkdir /servidor
 WORKDIR /servidor
 COPY --from=builder /project/target/prueba_servidor-0.0.1-SNAPSHOT.jar /servidor
-EXPOSE 8443
+EXPOSE 8080
 CMD java -jar /servidor/prueba_servidor-0.0.1-SNAPSHOT.jar --spring.datasource.url="jdbc:mysql://jlojosnegros-jlojosnegros-mysql:3306/gamesinfo_db?verifyServerCertificate=false&useSSL=true" --spring.datasource.username="root" --spring.datasource.password="gugus" --spring.jpa.hibernate.ddl-auto="update"
