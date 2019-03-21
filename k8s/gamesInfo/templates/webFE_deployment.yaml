@@ -29,7 +29,7 @@ spec:
       initContainers:
       - name: init-mailservice
         image: busybox
-        command: ['sh', '-c', 'until nslookup {{ include "gamesInfo.fullname" . }}-mailsender-svc; do echo waiting for {{ include "gamesInfo.fullname" . }}-mailsender-svc; sleep 2; done;']
+        command: ['sh', '-c', 'until nslookup {{.Values.mailSender.serviceName}}; do echo waiting for {{.Values.mailSender.serviceName}}; sleep 2; done;']
       - name: init-mysql
         image: busybox
         command: ['sh', '-c', 'until nslookup jlojosnegros-jlojosnegros-mysql; do echo waiting for mysql; sleep 2; done;']

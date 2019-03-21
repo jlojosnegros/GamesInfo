@@ -26,6 +26,7 @@ mailSender:
     tag: latest
     pullPolicy: IfNotPresent
   serviceType: ClusterIP
+  serviceName: mailsender-svc
   ports:
     # warning: Do NOT change this port unless you also change mailService java app configuration also.
     internalPort: 8080 #port where the mail service is listeninig incoming commands from webFE 
