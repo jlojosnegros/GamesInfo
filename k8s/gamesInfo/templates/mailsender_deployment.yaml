@@ -28,4 +28,4 @@ spec:
       initContainers:
       - name: init-mysql
         image: busybox
-        command: ['sh', '-c', 'until nslookup jlojosnegros-jlojosnegros-mysql; do echo waiting for mysql; sleep 2; done;']
+        command: ['sh', '-c', 'until nslookup {{.Values.mysql.fullnameOverride}}; do echo waiting for {{.Values.mysql.fullnameOverride}}; sleep 2; done;']

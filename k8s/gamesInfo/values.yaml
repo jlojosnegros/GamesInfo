@@ -58,7 +58,7 @@ mysql:
       [mysqld]
       skip-name-resolve
       bind-address=0.0.0.0
-  nameOverride: jlojosnegros-mysql
+  fullnameOverride: jlojosnegros-mysql-svc
 
 ingress:
   protocol: HTTPS

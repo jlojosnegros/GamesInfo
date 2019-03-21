@@ -32,4 +32,4 @@ spec:
         command: ['sh', '-c', 'until nslookup {{.Values.mailSender.serviceName}}; do echo waiting for {{.Values.mailSender.serviceName}}; sleep 2; done;']
       - name: init-mysql
         image: busybox
-        command: ['sh', '-c', 'until nslookup jlojosnegros-jlojosnegros-mysql; do echo waiting for mysql; sleep 2; done;']
+        command: ['sh', '-c', 'until nslookup {{.Values.mysql.fullnameOverride}}; do echo waiting for {{.Values.mysql.fullnameOverride}}; sleep 2; done;']
