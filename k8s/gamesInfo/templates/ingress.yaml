@@ -16,5 +16,5 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: {{ .Values.ingress.backend.service}}
+          serviceName: {{ .Values.webFE.serviceName}}
           servicePort: {{ .Values.webFE.port}}

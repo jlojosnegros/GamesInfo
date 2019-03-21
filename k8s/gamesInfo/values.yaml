@@ -13,6 +13,7 @@ webFE:
     tag: latest
     pullPolicy: IfNotPresent
   serviceType: ClusterIP
+  serviceName: webfe-svc
   port: 8080
   hazelcast:
     port: 5701
@@ -62,5 +63,3 @@ ingress:
   protocol: HTTPS
   host: gamesinfo.example.com
   path: /*
-  backend:
-    service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
