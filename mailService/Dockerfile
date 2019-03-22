@@ -9,8 +9,6 @@ RUN mvn package
 FROM ubuntu:trusty
 RUN sudo apt-get update && sudo apt-get install -y software-properties-common wget unzip && sudo add-apt-repository ppa:openjdk-r/ppa && sudo apt-get update 
 RUN sudo apt-get install -y openjdk-8-jre
-RUN sudo apt-get install -y mysql-client
-RUN sudo apt-get install -y curl
 RUN mkdir /mailService
 WORKDIR /mailService
 COPY --from=builder /project/target/mailService-0.0.1-SNAPSHOT.jar /mailService

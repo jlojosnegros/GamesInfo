@@ -116,7 +116,7 @@ RUN mkdir /servidor
 WORKDIR /servidor
 COPY --from=builder /project/target/prueba_servidor-0.0.1-SNAPSHOT.jar /servidor
 EXPOSE 8080
-CMD java -jar /servidor/prueba_servidor-0.0.1-SNAPSHOT.jar --spring.datasource.url="jdbc:mysql://jlojosnegros-jlojosnegros-mysql:3306/gamesinfo_db?verifyServerCertificate=false&useSSL=true" --spring.datasource.username="root" --spring.datasource.password="gugus" --spring.jpa.hibernate.ddl-auto="update"
+CMD java -jar /servidor/prueba_servidor-0.0.1-SNAPSHOT.jar --spring.datasource.url="jdbc:mysql://jlojosnegros-mysql-svc:3306/gamesinfo_db?verifyServerCertificate=false&useSSL=true" --spring.datasource.username="root" --spring.datasource.password="gugus" --spring.jpa.hibernate.ddl-auto="update"
 ```
 :warning: el nombre de la url, password, y nombre de la base de datos pasados como parametros tienen que coincidir con los configurados en el fichero de `values.yaml` para el servicio de mysql
 
@@ -162,10 +162,10 @@ spec:
       initContainers:
       - name: init-mailservice
         image: busybox
-        command: ['sh', '-c', 'until nslookup {{ include "gamesInfo.fullname" . }}-mailsender-svc; do echo waiting for {{ include "gamesInfo.fullname" . }}-mailsender-svc; sleep 2; done;']
+        command: ['sh', '-c', 'until nslookup {{.Values.mailSender.serviceName}}; do echo waiting for {{.Values.mailSender.serviceName}}; sleep 2; done;']
       - name: init-mysql
         image: busybox
-        command: ['sh', '-c', 'until nslookup jlojosnegros-jlojosnegros-mysql; do echo waiting for mysql; sleep 2; done;']
+        command: ['sh', '-c', 'until nslookup {{.Values.mysql.fullnameOverride}}; do echo waiting for {{.Values.mysql.fullnameOverride}}; sleep 2; done;']
 ```
 
 #### Service
@@ -175,7 +175,7 @@ fichero: `./k8s/gamesInfo/templates/webFE_service.yaml`[^webFE_service]
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "gamesInfo.fullname" . }}-webfe-svc
+  name: {{.Values.webFE.serviceName | quote}}
   labels:
     app: {{ .Values.global.appName}}
     tier: {{ .Values.webFE.tier}}
@@ -204,10 +204,10 @@ webFE:
     tag: latest
     pullPolicy: IfNotPresent
   serviceType: ClusterIP
+  serviceName: webfe-svc
   port: 8080
   hazelcast:
     port: 5701
-
 ```
 ### MailSender
 Segun los requisitos:
@@ -276,8 +276,7 @@ spec:
       initContainers:
       - name: init-mysql
         image: busybox
-        command: ['sh', '-c', 'until nslookup jlojosnegros-jlojosnegros-mysql; do echo waiting for mysql; sleep 2; done;']
-
+        command: ['sh', '-c', 'until nslookup {{.Values.mysql.fullnameOverride}}; do echo waiting for {{.Values.mysql.fullnameOverride}}; sleep 2; done;']
 ```
 
 #### Servicio
@@ -286,7 +285,7 @@ fichero `./k8s/gamesInfo/templates/mailsender_service.yaml`[^mailsender_service]
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{ include "gamesInfo.fullname" . }}-mailsender-svc"
+  name: {{.Values.mailSender.serviceName | quote}}
   labels:
     app: {{ .Values.global.appName}}
     tier: {{ .Values.mailSender.tier}}
@@ -304,14 +303,18 @@ spec:
 Parametros relevantes dentro del fichero de valores `values.yaml`
 
 ```yaml
+global:
+  appName: jlojosnegros
+
 mailSender:
-  replicaCount: 2
+  replicaCount: 1
   tier: back-end
   image:
     repository: mailservice
     tag: latest
     pullPolicy: IfNotPresent
   serviceType: ClusterIP
+  serviceName: mailsender-svc
   ports:
     # warning: Do NOT change this port unless you also change mailService java app configuration also.
     internalPort: 8080 #port where the mail service is listeninig incoming commands from webFE 
@@ -367,6 +370,8 @@ La aplicacion require de la existencia de un usuario determinado, con una clave 
 Para poder realizar estos pasos, asi como otros necesarios para el correcto funcionamiento de la base de datos en el entorno concreto de la aplicacion, utilizamos los siguientes valores en el fichero `values.yaml`(./k8s/gamesInfo/values.yaml)
 ```yaml
 mysql:
+  podLabels:
+    app: jlojosnegros
   mysqlRootPassword: gugus
   mysqlDatabase: gamesinfo_db
   persistence:
@@ -389,13 +394,13 @@ mysql:
       [mysqld]
       skip-name-resolve
       bind-address=0.0.0.0
-  nameOverride: jlojosnegros-mysql
+  fullnameOverride: jlojosnegros-mysql-svc
 ```
 - definimos con `mysqlRootPassword` el password del usuario `root` al valor requerido por la aplicacion. :warning: Este valor debe coincidir con los datos de configuracion pasados al frontal web en la linea de comandos de lanzamiento que se aplica en el fichero [`Dockerfile`](#Imagen-docker)
 - definimos con `mysqlDataBase` la creacion de una nueva base de datos con el nombre requerido por la aplicacion.
 - definimos el `storageClass` con el mismo valor que en el `persistent volume` que hemos creado para asegurarnos de que el `persistent volume claim`de mysql utiliza el  nuestro y no otro.
 - mediante `configurationFiles` nos aseguramos de que la configuracion de red de mysql es la correcta para nuestro entorno.
-- mediante `nameOverride` nos aseguramos de que el servicio que expondra la base de datos en el cluster de kubernetes, y que ya hemos configurado como `ClusterIP` para evitar que pueda ser accedida desde fuera del cluster, tenga un nombre fijo al que poder referirnos, puesto que el servicio de frontal web tendra que poder acceder a la base de datos.
+- mediante `fullnameOverride` nos aseguramos de que el servicio que expondra la base de datos en el cluster de kubernetes, y que ya hemos configurado como `ClusterIP` para evitar que pueda ser accedida desde fuera del cluster, tenga un nombre fijo al que poder referirnos, puesto que el servicio de frontal web tendra que poder acceder a la base de datos.
 
 #### Obtencion del chart
 No aseguramos de tener correctamente configurador el repositorio "@stable" de helm chart. La salida al ejecutar el siguiente comando deberia ser la que se muestra:
@@ -497,7 +502,7 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: {{ .Values.ingress.backend.service}}
+          serviceName: {{ .Values.webFE.serviceName}}
           servicePort: {{ .Values.webFE.port}}
 ```          
 
@@ -507,8 +512,6 @@ Aqui podemos ver algunos valores utilizados en el fichero `values.yaml`
 ```yaml
 ingress:
   host: gamesinfo.example.com
-  backend:
-    service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc
 ```
 
 #### Generacion de certificados.
@@ -680,6 +683,7 @@ webFE:               # Configuracion relativa al frontal web
     tag: latest                 # version o tag de la imagen
     pullPolicy: IfNotPresent   
   serviceType: ClusterIP        # Tipo de servicio utilizado para exponer el frontal
+  serviceName: webfe-svc        # Nombre del servicio que expondra el frontal web.
   port: 8080                    # Puerto en el que escuchara peticiones el frontal
   hazelcast:
     port: 5701                  # Puerto utilizado por hazelcast.
@@ -692,6 +696,7 @@ mailSender:         # Configuracion relativa al mail service
     tag: latest                 # version o tag de la imagen
     pullPolicy: IfNotPresent
   serviceType: ClusterIP        # Tipo de servicio utilizado para exponer el frontal
+  serviceName: mailsender-svc   # Nombre del servicio que expondra el servicio de correos
   ports:
     # warning: Do NOT change this port unless you also change mailService java app configuration also.
     internalPort: 8080 #port where the mail service is listeninig incoming commands from webFE 
@@ -723,12 +728,10 @@ mysql:          # Configuracion para el chart de mysql
       [mysqld]
       skip-name-resolve
       bind-address=0.0.0.0
-  nameOverride: jlojosnegros-mysql  # Nos aseguramos de que el servicio de mysql tiene un nombre fijo.
+  fullnameOverride: jlojosnegros-mysql-svc  # Nos aseguramos de que el servicio de mysql tiene un nombre fijo.
 
 ingress:                # Configuracion para el ingress controller
   host: gamesinfo.example.com          # Hostname que se utilizara en el ingress
-  backend:
-    service: jlojosnegros-jlojosnegros-gamesinfo-webfe-svc  # Servicio expuesto en el ingress controller.
 ```
 
 
