@@ -5,6 +5,7 @@
 ## ToC
 <!-- toc -->
 
+- [Introduccion](#Introduccion)
 - [Estructura elegida para el deployment](#Estructura-elegida-para-el-deployment)
   * [Web Front End](#Web-Front-End)
     + [Imagen docker](#Imagen-docker)
@@ -50,8 +51,13 @@
 
 <!-- tocstop -->
 
+## Introduccion
+
+Toda la información contenida en este documento así como los ficheros de código se encuentran en el repositorio: <https://github.com/jlojosnegros/GamesInfo>
+
 ## Estructura elegida para el deployment
-Segun los requisitos del enunciado el despliegue debe realizarse en minikube.
+
+Según los requisitos del enunciado el despliegue debe realizarse en minikube.
 ![Deployment Image](http://www.plantuml.com/plantuml/png/TP7DQiCm48JlUeh5TqFQSmY1a48EXK2Wbn2AB6rTWNwINTcXbBnx9JMD6kfUR3FVpCxAMdAK50TdXLGn42Xhq4T1gABqlKNefKFU-BS0dm901NSCFZbWl_4z8JEiWeyKh4KwW6Gmt_AzzupT4oNVski3pEShEt14scmNYnp9T5t6_murHNwTFJJ_WCSCBlT5JXgxGw-H9deov0B_bbKsrLZfP6tp_C4d2umq6eLDwSfAowEwLcaPPISPitTtiiMZTTTTPrLy76TfWRJy5eaDH_GlmGuEqn4WXuwZk0Xbmw3BvBtn4SbZF1JPv7LQClrxR1UtkxY-AoX_K9Gdj3gSVTBADaMgldfkKJzlYPzg8NAsfjAAo-GSdFq2)
 
 ```plantuml
@@ -93,7 +99,7 @@ Segun los requisitos:
   
 - El frontal debe quedar expuesto al exterior. 
   Para poder exponer al exterior este servicio se deberia haber elegido un servicio k8s de tipo `LoadBalancer`, sin embargo como se va a utilizar un **ingress controller**[^ingress_controller] para poder exponer el servicio al exterior se ha optado por utilizar un servicio de tipo `ClusterIP`.[^service_types]
- 
+
 No necesitamos ningun tipo de elemento adicional para balancear la carga entre las dos instancias del frontal web puesto que esta caracteristica nos la ofrece k8s out of the box.
 
 #### Imagen docker
@@ -504,7 +510,7 @@ spec:
         backend:
           serviceName: {{ .Values.webFE.serviceName}}
           servicePort: {{ .Values.webFE.port}}
-```          
+```
 
 Como puede verse en el fichero exponemos el servicio del frontal en la raiz del host.
 
